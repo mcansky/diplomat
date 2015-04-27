@@ -17,7 +17,7 @@ module Diplomat
         @raw = @conn.get concat_url url
         parse_body
       rescue Faraday::ResourceNotFound
-        default_value = Base64.encode64(default_value) unless default_value.nil?
+        default_value = Base64.encode64(default_value.to_s) unless default_value.nil?
         @raw = [{ 'Value' => default_value }]
       end
       return_value
@@ -86,7 +86,12 @@ module Diplomat
     def return_value
       if @raw.count == 1
         @value = @raw.first["Value"]
-        @value = Base64.decode64(@value) unless @value.nil?
+        unless @value.nil?
+          @value = Base64.decode64(@value)
+          @value = true if @value == 'true'
+          @value = false if @value == 'false'
+        end
+        @value
       else
         @value = @raw.map do |e|
                    {
